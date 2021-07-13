@@ -1,0 +1,36 @@
+{% extends '../baseTemplate.twig' %}
+
+{% block title %}Szczegóły trasy{% endblock %}
+{% block header %}
+  <h1>Trasa {{ trasy.getOpis }}</h1>
+{% endblock %}
+{% block main %}
+		<div class="col-12">
+    		  	<span>Nazwa: {{ trasy.pasmo.getNazwa }} <br/>Grupa: {{ trasy.pasmo.grupa.getNazwa }} <br/>Punkty GOT: {{ trasy.getSumaPunktowDoGot }} <br/>Punkty:  {{ trasy.getSuma_punktow }}
+    		  	
+    		  	<br/>Data: {{ trasy.getData }} </span>
+          </div>
+          <div class="col-12" >
+          <h1>Odcinki</h1>
+          {% for odc in odcinki %}
+          <br>
+    		  	 {% if odc.getPowrot == 0 %}
+                    <td>{{ odc.getOdcinek.getPunktPoczatkowy.getNazwa }}</td>
+                    <td>&#129138;&#129138;</td>
+                    <td><strong>{{odc.getOdcinek.getPunktKoncowy.getNazwa }}</strong></td>
+                {% else %}
+                    <td><strong>{{ odc.getOdcinek.getPunktPoczatkowy.getNazwa }}</strong></td>
+                    <td>&#129136;&#129136;</td>
+                    <td>{{ odc.getOdcinek.getPunktKoncowy.getNazwa }}</td>
+                {% endif %}
+    	{%  endfor %}
+          </div>
+      <div class="col-6">
+   {% if 'ROLE_przodownik' in LoggedUser.getAuthorities %}
+    <a href="/trasa/akceptuj/{{ trasy.getIdTrasa }}" class="btn btn-primary"  role="button">Akceptuj trasę</a>
+    <a href="/trasa/odrzuc/{{ trasy.getIdTrasa }}" class="btn btn-primary"  role="button">Odrzuć trasę</a>
+    <a class="btn btn-dark" href="/zdjecia/{{ trasy.getWycieczka.idWycieczka }}" role="button">Powrót</a>
+    {% endif %}
+   	 </div>
+          
+{% endblock %}

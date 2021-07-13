@@ -1,0 +1,63 @@
+{% extends '../baseTemplate.twig' %}
+
+{% block title %}Odznaki tabela{% endblock %}
+{% block header %}
+    Odznaki
+{% endblock %}
+{% block main %}
+    {{siema}}
+    <table id="myTable" class="table table-striped align-middle table-sm">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col" width="20px">#</th>
+                <th scope="col">Nazwa</th>
+                <th scope="col">Punkty</th>
+                {% if 'ROLE_administrator' in LoggedUser.getAuthorities %}
+                <th scope="col"></th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+
+        {% for odznaka in odznaki %}
+        <tr>
+              <td>{{ odznaka.getIdOdznaka}}</td>
+              <td>{{ odznaka.getNazwa }}</td>
+              <td>{{ odznaka.getPunkty }}</td>
+                {% if 'ROLE_administrator' in LoggedUser.getAuthorities %}
+                    <td class="text-right">
+                        <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
+                            <abbr title="Edytuj"><a class="btn btn-sm bg-transparent" href="/odznaki/form?id={{ odznaka.getIdOdznaka }}">✏️</a></abbr>
+                            <abbr title="Usuń"><button class="btn btn-sm bg-transparent usuwanieOdznakiTab" value="{{ odznaka.getIdOdznaka }}" data-toggle="modal" data-target="#usunOdznakeModal">🗑️</button></abbr>
+                        </div>
+
+                    </td>
+                {% endif %}
+        </tr>
+        {%  endfor %}
+
+        </tbody>
+    </table>
+    {% include 'usunOdznakeModal.twig' %}
+    {% if 'ROLE_administrator' in LoggedUser.getAuthorities %}
+    <a class="btn btn-info" href="/odznaki/form" role="button"><i class="fas fa-plus">Dodaj</i></a>
+     {% endif %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const usuwanieBTN = document.querySelector("#usuwanieOdznaki");
+        const usuwanieOdznakiTabBTN = document.querySelectorAll(".usuwanieOdznakiTab");
+        const usuwanieURL = "/odznaki/usun/";
+
+        usuwanieOdznakiTabBTN.forEach(btn=>{
+            btn.addEventListener("click", function () {
+                let value = btn.value;
+                usuwanieBTN.href = usuwanieURL + value;
+            })
+        })
+
+
+    });
+
+</script>
+{% endblock %}

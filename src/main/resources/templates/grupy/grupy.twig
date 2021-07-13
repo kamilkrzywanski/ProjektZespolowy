@@ -1,0 +1,60 @@
+{% extends '../baseTemplate.twig' %}
+
+{% block title %}Grupy Tabela{% endblock %}
+{% block header %}
+    Grupy
+{% endblock %}
+{% block main %}
+    {{siema}}
+    <table id="myTable" class="table table-striped align-middle table-sm">
+        <thead class="thead-dark">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Nazwa</th>
+            {% if 'ROLE_administrator' in LoggedUser.getAuthorities %}
+                <th scope="col"></th>
+            {% endif %}
+        </tr>
+        </thead>
+        <tbody>
+
+        {% for grupa in grupy %}
+            <tr>
+                <td>{{ grupa.getIdGrupa}}</td>
+                <td>{{ grupa.getNazwa }}</td>
+                {% if 'ROLE_administrator' in LoggedUser.getAuthorities %}
+                    <td class="text-right">
+                        <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
+                            <abbr title="Edytuj"><a class="btn btn-sm bg-transparent" href="/grupy/updateForm?id={{grupa.getIdGrupa}}">✏️</a></abbr>
+                            <abbr title="Usuń"><button class="btn btn-sm bg-transparent usuwanieGrupyTab" data-toggle="modal"  value="{{grupa.getIdGrupa}}" data-target="#usunGrupeModal">🗑️</button></abbr>
+                        </div>
+                    </td>
+                {% endif %}
+            </tr>
+        {%  endfor %}
+
+        </tbody>
+    </table>
+    {% include 'usunGrupeModal.twig' %}
+    {% if 'ROLE_administrator' in LoggedUser.getAuthorities %}
+        <a class="btn btn-info" href="/grupy/addForm" role="button"><i class="fas fa-plus">Dodaj</i></a>
+    {% endif %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const usuwanieBTN = document.querySelector("#usuwanieGrupy");
+            const usuwanieGrupyTabBTN = document.querySelectorAll(".usuwanieGrupyTab");
+            const usuwanieURL = "/grupy/usun/";
+
+            usuwanieGrupyTabBTN.forEach(btn=>{
+                btn.addEventListener("click", function () {
+                    let value = btn.value;
+                    usuwanieBTN.href = usuwanieURL + value;
+                })
+            })
+
+
+        });
+
+    </script>
+{% endblock %}

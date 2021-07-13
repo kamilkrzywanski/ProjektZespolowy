@@ -1,0 +1,76 @@
+{% extends '../baseTemplate.twig' %}
+
+{% block title %}Przodownicy tabela{% endblock %}
+{% block header %}
+    Przodownicy
+{% endblock %}
+{% block main %}
+    <table id="myTable" class="table table-striped align-middle table-sm">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Imię</th>
+                <th scope="col">Nazwisko</th>
+                <th scope="col">Telefon</th>
+                <th scope="col">Login</th>
+                <th scope="col">E-mail</th>
+                <th scope="col" class="text-center">Aktywny</th>
+                <th scope="col"></th>
+
+            </tr>
+        </thead>
+        <tbody>
+
+        {% for przodownik in przodownicy %}
+        <tr>
+            <td>{{ przodownik.getIdPrzodownik }}</td>
+            <td>{{ przodownik.getImie }}</td>
+            <td>{{ przodownik.getNazwisko }}</td>
+            <td>{{ przodownik.getTelefon }}</td>
+            <td>{{ przodownik.uzytkownik.getLogin }}</td>
+            <td>{{ przodownik.uzytkownik.getEmail }}</td>
+            {% if przodownik.uzytkownik.isEnabled %}
+                <td class="text-center"><a href="/aktywacja/zmien-status/{{ przodownik.uzytkownik.getIdUzytkownik }}"><i class="far fa-check-square fa-lg text-success"></i></a></td>
+            {% else %}
+                <td class="text-center"><a href="/aktywacja/zmien-status/{{ przodownik.uzytkownik.getIdUzytkownik }}"><i class="far fa-square fa-lg text-danger"></i></a></td>
+            {% endif %}
+            <td class="text-right">
+                <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
+                    <abbr title="Edytuj grupy górskie"><a class="btn btn-sm bg-transparent" href="/przodownicy/{{ przodownik.getIdPrzodownik }}/grupy">🏔️</a></abbr>
+                    {% if 'ROLE_administrator' in LoggedUser.getAuthorities %}
+                        <abbr title="Edytuj"><a class="btn btn-sm bg-transparent" href="/przodownicy/form?id={{ przodownik.getIdPrzodownik }}">✏️</a></abbr>
+                        <abbr title="Usuń"><button class="btn btn-sm bg-transparent usuwaniePrzodownikaTab" value="{{ przodownik.getIdPrzodownik }}" data-toggle="modal" data-target="#usunPrzodownikaModal">🗑️</button></abbr>
+                    {% endif %}
+                </div>
+            </td>
+
+
+
+        </tr>
+        {%  endfor %}
+
+        </tbody>
+    </table>
+    {% include 'usunPrzodownikaModal.twig' %}
+    {% if 'ROLE_administrator' in LoggedUser.getAuthorities %}
+        <a class="btn btn-info" href="/przodownicy/form" role="button"><i class="fas fa-user-plus"></i> Dodaj</a>
+    {% endif %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const usuwanieBTN = document.querySelector("#usuwaniePrzodownika");
+            const usuwaniePrzodownikaTabBTN = document.querySelectorAll(".usuwaniePrzodownikaTab");
+            const usuwanieURL = "/przodownicy/usun/";
+
+            usuwaniePrzodownikaTabBTN.forEach(btn=>{
+                btn.addEventListener("click", function () {
+                    let value = btn.value;
+                    usuwanieBTN.href = usuwanieURL + value;
+                })
+            })
+
+
+        });
+
+    </script>
+{% endblock %}

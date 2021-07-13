@@ -1,0 +1,173 @@
+{% extends '../baseTemplate.twig' %}
+
+{% block title %}Moja książeczka{% endblock %}
+{% block header %}
+
+    {% if ksiazeczka.getPowiadomienie == 1 %}
+        <div class="alert alert-info" role="alert">
+            <span>Otrzymałeś nową odznakę! Możesz przejść do zakładki <strong>Moje odznaki</strong>.
+            <a class="btn btn-info" href="/ksiazeczka/zamknij/{{ ksiazeczka.getIdKsiazeczka }}"
+               role="button">Zamknij</a></span>
+        </div>
+    {% elseif ksiazeczka.getPowiadomienie == 2 %}
+        <div class="alert alert-info" role="alert">
+            <span>Twoja prośba została rozpatrzona negatywnie.
+            <a class="btn btn-info" href="/ksiazeczka/zamknij/{{ ksiazeczka.getIdKsiazeczka }}"
+               role="button">Zamknij</a></span>
+        </div>
+    {% endif %}
+
+    {% if ksiazeczka is null %}
+        Nie posiadasz książeczki. Utwórz swoją książeczkę turysty.
+    {% else %}
+        <strong>{{ turysta.getImie }} {{ turysta.getNazwisko }} 📓</strong>
+    {% endif %}
+
+{% endblock %}
+{% block main %}
+
+    {% if ksiazeczka is null %}
+        <form id="addForm" action="/ksiazeczka/stworz" method="POST">
+            <input type="hidden" id="turysta" name="turysta" value="{{ turysta.getIdTurysta }}"/>
+            <input type="hidden" id="sumaPunktow" name="sumaPunktow" value="0"/>
+            <input type="hidden" id="zgloszona" name="zgloszona" value="0"/>
+
+            <button type="submit" class="btn btn-info">Utwórz 📓</button>
+        </form>
+    {% else %}
+
+        <h3>Zdobyte punkty aktualnie: {{ ksiazeczka.getSumaPunktow }}</h3>
+        <h3>Zdobyte punkty ogólnie: {{ ksiazeczka.getSumaPunktowWszystkich }}</h3>
+        <h5>opis:</h5>
+        <div class="text-justify"
+             style="max-width: 35%; -webkit-hyphens: auto; -ms-hyphens: auto; hyphens: auto; word-wrap: break-word;">
+            <p>{{ turysta.getOpis }}</p>
+        </div>
+
+        <h3 class="mt-5">Przegląd moich wycieczek:</h3>
+
+        <table id="myTable" class="table table-striped align-middle table-sm">
+            <thead class="thead-dark">
+            <tr>
+                <th scope="col" width="20px">#</th>
+                <th scope="col">Opis</th>
+                <th scope="col">Data od</th>
+                <th scope="col">Data do</th>
+                <th scope="col">Na odznakę</th>
+                <th scope="col">Pkt / do GOT</th>
+                <th scope="col">Zatwierdzona</th>
+                <th scope="col">Zaakceptowana przez</th>
+                <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for wycieczka in wycieczki %}
+                <tr>
+                    <td>{{ wycieczka.getIdWycieczka }}</td>
+                    <td>
+                        <div style='text-align: left; max-height: 72px; width: 155px; word-wrap: break-word; overflow-x: auto; hyphens: auto;'>{{ wycieczka.getOpis }}</div>
+                    </td>
+                    <td>{{ wycieczka.getDataOd }}</td>
+                    <td>{{ wycieczka.getDataDo }}</td>
+                    <td>🏅"{{ wycieczka.getOdznaka.getNazwa }}"</td>
+                    <td>{{ wycieczka.getSumaPunktow }} / {{ wycieczka.getSumaPunktowDoGot }}</td>
+                    {% if wycieczka.getZgloszona == 1 %}
+                        <td>Zgłoszona⚠️</td>
+                    {% elseif  wycieczka.getZatwierdzona == 0 %}
+                        <td>Nie</td>
+                    {% else %}
+                        <td>Tak✔️</td>
+                    {% endif %}
+                    {% if  wycieczka.getPrzodownikWycieczkaAccept == 0 %}
+                        <td></td>
+                    {% else %}
+                        {% for przodownik in przodownicy %}
+                            {% if przodownik.getIdPrzodownik == wycieczka.getPrzodownikWycieczkaAccept %}
+                                <td>{{ przodownik.getImie }} {{ przodownik.getNazwisko }}</td>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                    <td class="text-right">
+                        {% if wycieczka.getZgloszona == 1 or wycieczka.getZatwierdzona == 1 %}
+                            <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
+                                <abbr title="Trasy"><a class="btn btn-sm bg-transparent"
+                                                       href="/trasy/{{ wycieczka.getIdWycieczka }}">👣</a></abbr>
+                                <abbr title="Dokumentacja"><a class="btn btn-sm bg-transparent"
+                                                              href="/zdjecia/{{ wycieczka.getIdWycieczka }}">📷</a></abbr>
+                                <abbr title="Edytuj"><a class="btn disabled btn-sm bg-transparent"
+                                                        href="/wycieczka/form/{{ ksiazeczka.getIdKsiazeczka }}/{{ wycieczka.getIdWycieczka }}/1">✏️</a></abbr>
+                                <abbr title="Usuń"><a class="btn disabled btn-sm bg-transparent"
+                                                      href="/wycieczka/usun/{{ wycieczka.getIdWycieczka }}">🗑️</a></abbr>
+                                <abbr title="Zgłoś do oceny"><a class="btn disabled btn-sm bg-transparent"
+                                                                href="/wycieczka/zglos/{{ wycieczka.getIdWycieczka }}">📤</a></abbr>
+                            </div>
+                        {% else %}
+                            <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
+                                <abbr title="Trasy"><a class="btn btn-sm bg-transparent"
+                                                       href="/trasy/{{ wycieczka.getIdWycieczka }}">👣</a></abbr>
+                                <abbr title="Dokumentacja"><a class="btn btn-sm bg-transparent"
+                                                              href="/zdjecia/{{ wycieczka.getIdWycieczka }}">📷</a></abbr>
+                                <abbr title="Edytuj"><a class="btn btn-sm bg-transparent"
+                                                        href="/wycieczka/form/{{ ksiazeczka.getIdKsiazeczka }}/{{ wycieczka.getIdWycieczka }}/1">✏️</a></abbr>
+                                <abbr title="Usuń"><button class="btn btn-sm bg-transparent usunWycieczkeTab" data-toggle="modal"
+                                                           value="{{wycieczka.getIdWycieczka}}" data-target="#usunWycieczkeModal">🗑️</button></abbr>
+                                <abbr title="Zgłoś do oceny"><a class="btn btn-sm bg-transparent"
+                                                                href="/wycieczka/zglos/{{ wycieczka.getIdWycieczka }}">📤</a></abbr>
+                            </div>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+        {% include 'usunWycieczkeModal.twig' %}
+        {% if 'ROLE_turysta' in LoggedUser.getAuthorities %}
+            <div><a class="btn btn-info" href="/wycieczka/form/{{ ksiazeczka.getIdKsiazeczka }}" role="button">Utwórz
+                    nową wycieczkę 🏕️</a></div>
+
+            {% if ksiazeczka.getZgloszona != 1 %}
+                <div style="text-align: right"><a class="btn btn-warning"
+                                                  href="/ksiazeczka/zglos/{{ ksiazeczka.getIdKsiazeczka }}"
+                                                  role="button">Zgłoś</a>
+                </div>
+            {% else %}
+                <abbr title="Książeczka oczekuje na rozpatrzenie">
+                    <div style="text-align: right"><a class="btn btn-warning disabled"
+                                                      href="/ksiazeczka/zglos/{{ ksiazeczka.getIdKsiazeczka }}"
+                                                      role="button">Zgłoś</a></div>
+                </abbr>
+            {% endif %}
+
+        {% else %}
+            <button class="btn btn-info" role="button" data-toggle="modal" data-target="#acceptBookModal">
+                Przyznaj odznakę
+            </button>
+            <button class="btn btn-danger" role="button" data-toggle="modal" data-target="#rejectBookModal">
+                Odrzuć zgłoszenie
+            </button>
+            {% include 'acceptBookModal.twig' %}
+            {% include 'rejectBookModal.twig' %}
+        {% endif %}
+
+    {% endif %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const usuwanieBTN = document.querySelector("#usuwanieWycieczki");
+            const usuwanieWycieczkiTabBTN = document.querySelectorAll(".usunWycieczkeTab");
+            const usuwanieURL = "/wycieczka/usun/";
+
+            usuwanieWycieczkiTabBTN.forEach(btn=>{
+                btn.addEventListener("click", function () {
+                    let value = btn.value;
+                    usuwanieBTN.href = usuwanieURL + value;
+                })
+            })
+
+
+        });
+
+    </script>
+{% endblock %}

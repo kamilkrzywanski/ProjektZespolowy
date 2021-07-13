@@ -1,0 +1,91 @@
+{% extends '../baseTemplate.twig' %}
+{% block title %}Turysta tabela{% endblock %}
+{% block header %}
+    Turyści
+    {{ turysta.getNiepelnosprawnosc }}
+{% endblock %}
+{% block main %}
+    <table id="myTable" class="table table-striped align-middle table-sm"
+           xmlns:word-wrap="http://www.w3.org/1999/xhtml" xmlns:white-space="http://www.w3.org/1999/xhtml"
+           xmlns:overflow-x="http://www.w3.org/1999/xhtml">
+        <thead class="thead-dark">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Imie</th>
+            <th scope="col">Nazwisko</th>
+            <th scope="col">Telefon</th>
+            <th scope="col">Data Urodzenia</th>
+            <th scope="col">Uzytkownik</th>
+            <th scope="col">Opis</th>
+            <th scope="col">Niepełnosprawność</th>
+            <th scope="col">Punkty</th>
+            <th scope="col" class="text-center">Aktywny</th>
+            <th scope="col"></th>
+        </tr>
+        </thead>
+        <tbody>
+
+        {% for turysta in turysci %}
+            <tr>
+                <td>{{ turysta.getIdTurysta }}</td>
+                <td>{{ turysta.getImie }}</td>
+                <td>{{ turysta.getNazwisko }}</td>
+                <td>{{ turysta.getTelefon }}</td>
+                <td>{{ turysta.getDataUrodzenia }}</td>
+                <td>{{ turysta.uzytkownik.getLogin }}</td>
+                <td>
+                    <div style='max-height: 65px; width: 100px; word-wrap: break-word; overflow-x: auto;'>{{ turysta.getOpis }}</div>
+                </td>
+                {% if turysta.isNiepelnosprawnosc %}
+                    <td>Tak</td>
+                {% else %}
+                    <td>Nie</td>
+                {% endif %}
+                <td>{{ turysta.getPunkty }}</td>
+                {% if turysta.uzytkownik.isEnabled %}
+                    <td class="text-center"><a href="/aktywacja/zmien-status/{{ turysta.uzytkownik.getIdUzytkownik }}"><i class="far fa-check-square fa-lg text-success"></i></a></td>
+                {% else %}
+                    <td class="text-center"><a href="/aktywacja/zmien-status/{{ turysta.uzytkownik.getIdUzytkownik }}"><i class="far fa-square fa-lg text-danger"></i></a></td>
+                {% endif %}
+                <td class="text-right">
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
+                        {% if 'ROLE_administrator' in LoggedUser.getAuthorities or  'ROLE_przodownik' in LoggedUser.getAuthorities %}
+                        <abbr title="Odznaki"><a class="btn btn-sm bg-transparent"
+                                                 href="/turystaodznaki/znajdzOdznakiTurysty?idTurysta={{ turysta.getIdTurysta }}">🏅</a></abbr>
+                        {% endif %}
+                        {% if 'ROLE_administrator' in LoggedUser.getAuthorities %}
+                            <abbr title="Edytuj"><a class="btn btn-sm bg-transparent"
+                                                    href="/turysci/updateForm?id={{ turysta.getIdTurysta }}">✏️</a></abbr>
+                            <abbr title="Usuń"><button class="btn btn-sm bg-transparent usuwanieTurystyTab" value="{{ turysta.getIdTurysta }}"
+                                                   data-toggle="modal" data-target="#usunTurysteModal">🗑️</button></abbr>
+
+                        {% endif %}
+                    </div>
+                </td>
+
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% include 'usunTurysteModal.twig' %}
+    {% if 'ROLE_administrator' in LoggedUser.getAuthorities %}
+        <a class="btn btn-info" href="/turysci/addForm" role="button"><i class="fas fa-user-plus"></i> Dodaj</a>
+    {% endif %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const usuwanieBTN = document.querySelector("#usuwanieTurysty");
+            const usuwanieTurystyTabBTN = document.querySelectorAll(".usuwanieTurystyTab");
+            const usuwanieURL = "/turysci/usun/";
+
+            usuwanieTurystyTabBTN.forEach(btn=>{
+                btn.addEventListener("click", function () {
+                    let value = btn.value;
+                    usuwanieBTN.href = usuwanieURL + value;
+                })
+            })
+
+
+        });
+    </script>
+{% endblock %}
